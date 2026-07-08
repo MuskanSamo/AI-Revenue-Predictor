@@ -157,7 +157,7 @@ if st.button("🚀 Predict Revenue"):
     
 
     # ---------- Create Input ----------
-    input_df = pd.DataFrame(0, index=[0], columns=columns)
+    input_df = pd.DataFrame(0.0, index=[0], columns=columns)
 
     # Continuous Features
     input_df.loc[0, "duration_seconds"] = duration
