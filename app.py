@@ -5,14 +5,16 @@ import tensorflow as tf
 import joblib
 
 # -----------------------------
-# Load Model & Files
+# Load Model & Supporting Files
 # -----------------------------
 model = tf.keras.models.load_model("revenue_model.keras")
 scaler = joblib.load("scaler.pkl")
 columns = joblib.load("columns.pkl")
+continuous_cols = joblib.load("continuous_cols.pkl")
+binary_cols = joblib.load("binary_cols.pkl")
 
 # -----------------------------
-# Page Configuration
+# Streamlit Page
 # -----------------------------
 st.set_page_config(
     page_title="AI Revenue Predictor",
@@ -20,11 +22,14 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📈 AI Generated Media Revenue Predictor")
+st.title("📈 AI-Generated Media Revenue Predictor")
 
-st.write("""
-Predict the expected revenue of AI-generated media using a Deep Learning model.
-""")
+st.write(
+    """
+This application predicts the expected revenue of AI-generated media
+using a Deep Learning Regression Model.
+"""
+)
 
 st.markdown("---")
 
@@ -36,7 +41,7 @@ st.header("Enter Media Details")
 
 platform = st.selectbox(
     "Platform",
-    ["TikTok", "YouTube", "Instagram"]
+    ["TikTok", "Instagram", "YouTube"]
 )
 
 content_type = st.selectbox(
@@ -48,12 +53,12 @@ ai_tool = st.selectbox(
     "AI Tool",
     [
         "Adobe Firefly",
-        "HeyGen",
         "Canva AI",
+        "CapCut AI",
+        "HeyGen",
         "InVideo AI",
         "Pika",
         "Runway",
-        "CapCut AI",
         "Synthesia"
     ]
 )
@@ -61,24 +66,28 @@ ai_tool = st.selectbox(
 ai_type = st.selectbox(
     "AI Type",
     [
-        "Text-to-video",
-        "Avatar video",
         "AI-assisted editing",
-        "Image-to-video"
+        "Avatar video",
+        "Image-to-video",
+        "Text-to-video"
     ]
 )
 
-duration = st.number_input("Duration (seconds)", min_value=1.0, value=60.0)
+duration = st.number_input(
+    "Duration (seconds)",
+    min_value=1.0,
+    value=60.0
+)
 
 production_cost = st.number_input(
     "Production Cost (USD)",
-    min_value=1.0,
+    min_value=0.0,
     value=100.0
 )
 
 views = st.number_input(
     "Views",
-    min_value=1.0,
+    min_value=0.0,
     value=1000.0
 )
 
@@ -101,7 +110,7 @@ shares = st.number_input(
 )
 
 engagement_rate = st.number_input(
-    "Engagement Rate",
+    "Engagement Rate (%)",
     min_value=0.0,
     value=5.0
 )
@@ -113,39 +122,101 @@ watch_time = st.number_input(
 )
 
 retention_rate = st.number_input(
-    "Retention Rate",
+    "Retention Rate (%)",
     min_value=0.0,
     value=60.0
 )
+# -----------------------------
+# Prediction
+# -----------------------------
 
 st.markdown("---")
 
-if st.button("Predict Revenue"):
+if st.button("🚀 Predict Revenue"):
 
-    input_data = {
-        "Platform": platform,
-        "Content_Type": content_type,
-        "AI_Tool": ai_tool,
-        "AI_Type": ai_type,
-        "Duration_sec": duration,
-        "Production_Cost_USD": production_cost,
-        "Views": views,
-        "Likes": likes,
-        "Comments": comments,
-        "Shares": shares,
-        "Engagement_Rate": engagement_rate,
-        "Average_Watch_Time_sec": watch_time,
-        "Retention_Rate": retention_rate,
-    }
+    # ---------- Engineered Features ----------
+    engagement_score = likes + comments + shares
 
-    input_df = pd.DataFrame([input_data])
+    views_per_sec = views / duration if duration > 0 else 0
 
-    input_df = pd.get_dummies(input_df)
+    likes_ratio = likes / views if views > 0 else 0
+    comments_ratio = comments / views if views > 0 else 0
+    shares_ratio = shares / views if views > 0 else 0
 
-    input_df = input_df.reindex(columns=columns, fill_value=0)
+    cost_per_view = production_cost / views if views > 0 else 0
 
-    input_scaled = scaler.transform(input_df)
+    engagement_per_second = engagement_score / duration if duration > 0 else 0
 
-    prediction = model.predict(input_scaled)
+    log_views = np.log1p(views)
+    log_cost = np.log1p(production_cost)
 
-    st.success(f"💰 Predicted Revenue: ${prediction[0][0]:,.2f}")
+    virality_score = (
+        engagement_rate
+        * retention_rate
+        * shares_ratio
+    )
+
+    # ---------- Create Input ----------
+    input_df = pd.DataFrame(0, index=[0], columns=columns)
+
+    # Continuous Features
+    input_df.loc[0, "duration_seconds"] = duration
+    input_df.loc[0, "production_cost_usd"] = production_cost
+    input_df.loc[0, "views"] = views
+    input_df.loc[0, "likes"] = likes
+    input_df.loc[0, "comments"] = comments
+    input_df.loc[0, "shares"] = shares
+    input_df.loc[0, "engagement_rate"] = engagement_rate
+    input_df.loc[0, "watch_time_avg_sec"] = watch_time
+    input_df.loc[0, "retention_rate"] = retention_rate
+
+    input_df.loc[0, "engagement_score"] = engagement_score
+    input_df.loc[0, "views_per_sec"] = views_per_sec
+    input_df.loc[0, "likes_ratio"] = likes_ratio
+    input_df.loc[0, "comments_ratio"] = comments_ratio
+    input_df.loc[0, "shares_ratio"] = shares_ratio
+    input_df.loc[0, "cost_per_view"] = cost_per_view
+    input_df.loc[0, "engagement_per_second"] = engagement_per_second
+    input_df.loc[0, "log_views"] = log_views
+    input_df.loc[0, "log_cost"] = log_cost
+    input_df.loc[0, "virality_score"] = virality_score
+
+    # ---------- Binary Columns ----------
+
+    if platform == "TikTok":
+        input_df.loc[0, "platform_TikTok"] = 1
+
+    elif platform == "YouTube":
+        input_df.loc[0, "platform_YouTube"] = 1
+
+    if content_type == "Short":
+        input_df.loc[0, "content_type_Short"] = 1
+
+    elif content_type == "Video":
+        input_df.loc[0, "content_type_Video"] = 1
+
+    if ai_type == "Avatar video":
+        input_df.loc[0, "ai_type_Avatar video"] = 1
+
+    elif ai_type == "Image-to-video":
+        input_df.loc[0, "ai_type_Image-to-video"] = 1
+
+    elif ai_type == "Text-to-video":
+        input_df.loc[0, "ai_type_Text-to-video"] = 1
+
+    tool_col = f"ai_tool_used_{ai_tool}"
+
+    if tool_col in input_df.columns:
+        input_df.loc[0, tool_col] = 1
+
+    # ---------- Scale Continuous Features ----------
+    input_df[continuous_cols] = scaler.transform(
+        input_df[continuous_cols]
+    )
+
+    # ---------- Prediction ----------
+    prediction = model.predict(input_df, verbose=0)
+
+    revenue = np.expm1(prediction[0][0])
+
+    st.success(f"### 💰 Predicted Revenue: ${revenue:,.2f}")
