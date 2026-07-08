@@ -117,3 +117,35 @@ retention_rate = st.number_input(
     min_value=0.0,
     value=60.0
 )
+
+st.markdown("---")
+
+if st.button("Predict Revenue"):
+
+    input_data = {
+        "Platform": platform,
+        "Content_Type": content_type,
+        "AI_Tool": ai_tool,
+        "AI_Type": ai_type,
+        "Duration_sec": duration,
+        "Production_Cost_USD": production_cost,
+        "Views": views,
+        "Likes": likes,
+        "Comments": comments,
+        "Shares": shares,
+        "Engagement_Rate": engagement_rate,
+        "Average_Watch_Time_sec": watch_time,
+        "Retention_Rate": retention_rate,
+    }
+
+    input_df = pd.DataFrame([input_data])
+
+    input_df = pd.get_dummies(input_df)
+
+    input_df = input_df.reindex(columns=columns, fill_value=0)
+
+    input_scaled = scaler.transform(input_df)
+
+    prediction = model.predict(input_scaled)
+
+    st.success(f"💰 Predicted Revenue: ${prediction[0][0]:,.2f}")
