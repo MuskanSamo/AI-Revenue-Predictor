@@ -52,7 +52,6 @@ content_type = st.selectbox(
 ai_tool = st.selectbox(
     "AI Tool",
     [
-        "Adobe Firefly",
         "Canva AI",
         "CapCut AI",
         "HeyGen",
@@ -155,6 +154,7 @@ if st.button("🚀 Predict Revenue"):
         * retention_rate
         * shares_ratio
     )
+    
 
     # ---------- Create Input ----------
     input_df = pd.DataFrame(0, index=[0], columns=columns)
@@ -220,3 +220,5 @@ if st.button("🚀 Predict Revenue"):
     revenue = np.expm1(prediction[0][0])
 
     st.success(f"### 💰 Predicted Revenue: ${revenue:,.2f}")
+    st.balloons()
+    st.caption(f"Raw Model Output: {prediction[0][0]:.4f}")
