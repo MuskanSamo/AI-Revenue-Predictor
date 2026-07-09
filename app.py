@@ -220,5 +220,5 @@ if st.button("🚀 Predict Revenue"):
 revenue = prediction[0][0]
 
 st.success(f"💰 Predicted Revenue: ${revenue:,.2f}")
-    st.balloons()
-    st.caption(f"Raw Model Output: {prediction[0][0]:.4f}")
+st.balloons()
+st.caption(f"Raw Model Output: {prediction[0][0]:.4f}")
