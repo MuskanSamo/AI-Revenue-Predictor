@@ -217,8 +217,8 @@ if st.button("🚀 Predict Revenue"):
     # ---------- Prediction ----------
     prediction = model.predict(input_df, verbose=0)
 
-    revenue = np.expm1(prediction[0][0])
+revenue = prediction[0][0]
 
-    st.success(f"### 💰 Predicted Revenue: ${revenue:,.2f}")
+st.success(f"💰 Predicted Revenue: ${revenue:,.2f}")
     st.balloons()
     st.caption(f"Raw Model Output: {prediction[0][0]:.4f}")
