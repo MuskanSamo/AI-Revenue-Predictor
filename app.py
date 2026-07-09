@@ -213,20 +213,23 @@ if st.button("🚀 Predict Revenue"):
     input_df[continuous_cols] = scaler.transform(
         input_df[continuous_cols]
     )
-with st.spinner("🤖 AI is analyzing your media... Please wait..."):
-    progress = st.progress(0)
-
-for i in range(100):
-    progress.progress(i + 1)
-
-prediction = model.predict(input_df, verbose=0)
-
-progress.empty()
     # ---------- Prediction ----------
-    prediction = model.predict(input_df, verbose=0)
 
-revenue = prediction[0][0]
+    with st.spinner("🤖 AI is analyzing your media... Please wait..."):
 
-st.success(f"💰 Predicted Revenue: ${revenue:,.2f}")
-st.balloons()
-st.caption(f"Raw Model Output: {prediction[0][0]:.4f}")
+        progress = st.progress(0)
+
+        for i in range(100):
+            progress.progress(i + 1)
+
+        prediction = model.predict(input_df, verbose=0)
+
+        progress.empty()
+
+    revenue = prediction[0][0]
+
+    st.success(f"💰 Predicted Revenue: ${revenue:,.2f}")
+
+    st.balloons()
+
+    st.caption(f"Raw Model Output: {prediction[0][0]:.4f}")
