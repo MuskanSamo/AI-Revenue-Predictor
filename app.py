@@ -18,120 +18,149 @@ binary_cols = joblib.load("binary_cols.pkl")
 # -----------------------------
 st.set_page_config(
     page_title="AI Revenue Predictor",
-    page_icon="📈",
-    layout="wide"
+    page_icon="🤖",
+    layout="wide",
 )
 
-st.title("📈 AI-Generated Media Revenue Predictor")
+st.title("🤖 AI Revenue Predictor")
+st.image("https://images.unsplash.com/photo-1677442135136-760c813028c0?w=1200", use_container_width=True)
+st.markdown("""
+### Predict the Revenue of AI-Generated Media
 
-st.write(
-    """
-This application predicts the expected revenue of AI-generated media
-using a Deep Learning Regression Model.
-"""
+Estimate the expected revenue of AI-generated media using a trained
+Deep Learning Regression Model.
+""")
+
+st.divider()
+
+# -----------------------------
+# Sidebar
+# -----------------------------
+with st.sidebar:
+    st.header("📊 About This Project")
+
+    st.write("""
+**Model:** Feedforward Neural Network
+
+**Framework:** TensorFlow / Keras
+
+**Dataset:** 30,000+ AI-generated media records
+
+**Performance:** R² Score ≈ 0.75
+""")
+
+st.info(
+    "💡 Fill in the media details below and click **Predict Revenue**."
 )
-
-st.markdown("---")
 
 st.header("Enter Media Details")
+
+col1, col2 = st.columns(2)
 
 # -----------------------------
 # User Inputs
 # -----------------------------
 
-platform = st.selectbox(
-    "Platform",
-    ["TikTok", "Instagram", "YouTube"]
-)
+with col1:
 
-content_type = st.selectbox(
-    "Content Type",
-    ["Short", "Reel", "Video"]
-)
+    platform = st.selectbox(
+        "Platform",
+        ["TikTok", "Instagram", "YouTube"]
+    )
 
-ai_tool = st.selectbox(
-    "AI Tool",
-    [
-        "Canva AI",
-        "CapCut AI",
-        "HeyGen",
-        "InVideo AI",
-        "Pika",
-        "Runway",
-        "Synthesia"
-    ]
-)
+    content_type = st.selectbox(
+        "Content Type",
+        ["Short", "Reel", "Video"]
+    )
 
-ai_type = st.selectbox(
-    "AI Type",
-    [
-        "AI-assisted editing",
-        "Avatar video",
-        "Image-to-video",
-        "Text-to-video"
-    ]
-)
+    ai_tool = st.selectbox(
+        "AI Tool",
+        [
+            "Canva AI",
+            "CapCut AI",
+            "HeyGen",
+            "InVideo AI",
+            "Pika",
+            "Runway",
+            "Synthesia"
+        ]
+    )
 
-duration = st.number_input(
-    "Duration (seconds)",
-    min_value=1.0,
-    value=60.0
-)
+    ai_type = st.selectbox(
+        "AI Type",
+        [
+            "AI-assisted editing",
+            "Avatar video",
+            "Image-to-video",
+            "Text-to-video"
+        ]
+    )
 
-production_cost = st.number_input(
-    "Production Cost (USD)",
-    min_value=0.0,
-    value=100.0
-)
+    duration = st.number_input(
+        "Duration (seconds)",
+        min_value=1.0,
+        value=60.0
+    )
 
-views = st.number_input(
-    "Views",
-    min_value=0.0,
-    value=1000.0
-)
+    production_cost = st.number_input(
+        "Production Cost (USD)",
+        min_value=0.0,
+        value=100.0
+    )
 
-likes = st.number_input(
-    "Likes",
-    min_value=0.0,
-    value=100.0
-)
+with col2:
 
-comments = st.number_input(
-    "Comments",
-    min_value=0.0,
-    value=20.0
-)
+    views = st.number_input(
+        "Views",
+        min_value=0.0,
+        value=1000.0
+    )
 
-shares = st.number_input(
-    "Shares",
-    min_value=0.0,
-    value=10.0
-)
+    likes = st.number_input(
+        "Likes",
+        min_value=0.0,
+        value=100.0
+    )
 
-engagement_rate = st.number_input(
-    "Engagement Rate (%)",
-    min_value=0.0,
-    value=5.0
-)
+    comments = st.number_input(
+        "Comments",
+        min_value=0.0,
+        value=20.0
+    )
 
-watch_time = st.number_input(
-    "Average Watch Time (seconds)",
-    min_value=0.0,
-    value=45.0
-)
+    shares = st.number_input(
+        "Shares",
+        min_value=0.0,
+        value=10.0
+    )
 
-retention_rate = st.number_input(
-    "Retention Rate (%)",
-    min_value=0.0,
-    value=60.0
-)
+    engagement_rate = st.number_input(
+        "Engagement Rate (%)",
+        min_value=0.0,
+        value=5.0
+    )
+
+    watch_time = st.number_input(
+        "Average Watch Time (seconds)",
+        min_value=0.0,
+        value=45.0
+    )
+
+    retention_rate = st.number_input(
+        "Retention Rate (%)",
+        min_value=0.0,
+        value=60.0
+    )
+
+st.markdown("---")
 # -----------------------------
 # Prediction
 # -----------------------------
 
-st.markdown("---")
-
-if st.button("🚀 Predict Revenue"):
+if st.button(
+    "🚀 Predict Revenue",
+    use_container_width=True
+):
 
     # ---------- Engineered Features ----------
     engagement_score = likes + comments + shares
@@ -154,12 +183,15 @@ if st.button("🚀 Predict Revenue"):
         * retention_rate
         * shares_ratio
     )
-    
 
-    # ---------- Create Input ----------
-    input_df = pd.DataFrame(0.0, index=[0], columns=columns)
+    # ---------- Create Input DataFrame ----------
+    input_df = pd.DataFrame(
+        0.0,
+        index=[0],
+        columns=columns
+    )
 
-    # Continuous Features
+    # ---------- Continuous Features ----------
     input_df.loc[0, "duration_seconds"] = duration
     input_df.loc[0, "production_cost_usd"] = production_cost
     input_df.loc[0, "views"] = views
@@ -181,7 +213,7 @@ if st.button("🚀 Predict Revenue"):
     input_df.loc[0, "log_cost"] = log_cost
     input_df.loc[0, "virality_score"] = virality_score
 
-    # ---------- Binary Columns ----------
+    # ---------- One-Hot Encoding ----------
 
     if platform == "TikTok":
         input_df.loc[0, "platform_TikTok"] = 1
@@ -213,8 +245,7 @@ if st.button("🚀 Predict Revenue"):
     input_df[continuous_cols] = scaler.transform(
         input_df[continuous_cols]
     )
-    # ---------- Prediction ----------
-
+        # ---------- Prediction ----------
     with st.spinner("🤖 AI is analyzing your media... Please wait..."):
 
         progress = st.progress(0)
@@ -228,8 +259,24 @@ if st.button("🚀 Predict Revenue"):
 
     revenue = prediction[0][0]
 
-    st.success(f"💰 Predicted Revenue: ${revenue:,.2f}")
+    st.success("✅ Prediction Completed Successfully!")
+
+    st.metric(
+        label="💰 Predicted Revenue",
+        value=f"${revenue:,.2f}"
+    )
 
     st.balloons()
 
-    st.caption(f"Raw Model Output: {prediction[0][0]:.4f}")
+    with st.expander("📊 View Model Output"):
+        st.write(f"Raw Prediction: {prediction[0][0]:.4f}")
+
+# -----------------------------
+# Footer
+# -----------------------------
+
+st.divider()
+
+st.caption(
+    "Built with ❤️ using Streamlit • TensorFlow • Keras • Python"
+)
